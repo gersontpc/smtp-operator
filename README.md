@@ -75,21 +75,47 @@ Sinta‑se livre para adaptar conforme as políticas de segurança do seu cluste
 Quando usado como um operador Kubernetes, o controlador observa recursos customizados (por exemplo, `SMTPRelay`) e garante que a infraestrutura
 esteja alinhada com a especificação desejada. O fluxo típico é:
 
-> **Nota sobre ícones** – o Mermaid suporta imagens e pacotes de ícones (ver [StackOverflow](https://stackoverflow.com/questions/79123430/rendering-icons-in-mermaid-architecture-diagram) para exemplos).  Você pode inserir SVGs/PNGs inline ou registrar um pacote usando `mermaid.registerIconPacks`. No GitHub, a forma mais confiável é usar tags `<img>` dentro dos rótulos.
+> **Nota sobre ícones** – o Mermaid suporta imagens, pacotes de ícones e elementos HTML na sintaxe de **architecture diagrams**.
+> Consulte a documentação: https://mermaid.js.org/syntax/architecture.html#icons.
 >
-> Exemplo simplificado com ícones do Kubernetes (raw.githubusercontent.com é usado para hospedar os SVGs):
-> 
-> ```html
-> <div class="mermaid">
-> flowchart LR
->     Pod[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Pod]
->     Deployment[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Deployment]
->     Service[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Service]
->     Pod --> Deployment --> Service
-> </div>
-> ```
-> 
-> (substitua os URLs por ícones reais de pod/deployment/service conforme necessário).
+> - Para renderizadores que carregam JavaScript (site próprio, páginas estáticas com o bundle), você pode **registrar icon packs**:
+>   ```js
+>   mermaid.initialize({ startOnLoad: true });
+>   mermaid.registerIconPacks([{
+>       name: 'k8s',
+>       loader: () => fetch('https://unpkg.com/@iconify-json/mdi/icons.json').then(r => r.json())
+>   }]);
+>   ```
+>   Em seguida use `icon` ou `<i>` em nós, por exemplo:
+>   ```mermaid
+>   flowchart LR
+>       pod["pod"]:::k8s
+>   ```
+>
+> - Para o GitHub e outros visualizadores estáticos, a forma mais confiável é usar **tags `<img>`** ou HTML `<i>` com URLs diretos:
+>   ```html
+>   <div class="mermaid">
+>   flowchart LR
+>       Pod[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Pod]
+>       Deployment[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Deployment]
+>       Service[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Service]
+>       Pod --> Deployment --> Service
+>   </div>
+>   ```
+>
+> - Exemplo usando sintaxe de arquitetura com `<i>` (necessita pacote/iconify):
+>   ```html
+>   <div class="mermaid">
+>   flowchart LR
+>       pod[<i class="iconify" data-icon="mdi:kubernetes" data-inline="false" style="font-size:1.5rem"></i> Pod]
+>       deployment[<i class="iconify" data-icon="mdi:kubernetes-deployment" data-inline="false" style="font-size:1.5rem"></i> Deployment]
+>       service[<i class="iconify" data-icon="mdi:kubernetes-service" data-inline="false" style="font-size:1.5rem"></i> Service]
+>       pod --> deployment --> service
+>   </div>
+>   ```
+>
+> Ajuste URLs/ícones conforme necessário para refletir pod, deployment, service, etc.
+>
 
 
 ```mermaid
