@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smtp-relay
+  labels:
+    app: smtp-relay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smtp-relay
+  template:
+    metadata:
+      labels:
+        app: smtp-relay
+    spec:
+      containers:
+        - name: smtp-relay
+          image: myregistry/smtp-relay:latest  # ajuste para o seu repositório
+          ports:
+            - containerPort: 25
+          env:
+            - name: RELAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-relay-credentials
+                  key: user
+            - name: RELAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-relay-credentials
+                  key: password
+            - name: MYDOMAIN
+              value: "smtp-relay.default.svc.cluster.local"
+          # recursos e segurança adicionais podem ser definidos aqui
