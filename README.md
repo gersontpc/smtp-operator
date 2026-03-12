@@ -75,6 +75,23 @@ Sinta‑se livre para adaptar conforme as políticas de segurança do seu cluste
 Quando usado como um operador Kubernetes, o controlador observa recursos customizados (por exemplo, `SMTPRelay`) e garante que a infraestrutura
 esteja alinhada com a especificação desejada. O fluxo típico é:
 
+> **Nota sobre ícones** – o Mermaid suporta imagens e pacotes de ícones (ver [StackOverflow](https://stackoverflow.com/questions/79123430/rendering-icons-in-mermaid-architecture-diagram) para exemplos).  Você pode inserir SVGs/PNGs inline ou registrar um pacote usando `mermaid.registerIconPacks`. No GitHub, a forma mais confiável é usar tags `<img>` dentro dos rótulos.
+>
+> Exemplo simplificado com ícones do Kubernetes (raw.githubusercontent.com é usado para hospedar os SVGs):
+> 
+> ```html
+> <div class="mermaid">
+> flowchart LR
+>     Pod[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Pod]
+>     Deployment[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Deployment]
+>     Service[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Service]
+>     Pod --> Deployment --> Service
+> </div>
+> ```
+> 
+> (substitua os URLs por ícones reais de pod/deployment/service conforme necessário).
+
+
 ```mermaid
 flowchart LR
     subgraph Cluster
