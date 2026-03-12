@@ -75,68 +75,33 @@ Sinta‑se livre para adaptar conforme as políticas de segurança do seu cluste
 Quando usado como um operador Kubernetes, o controlador observa recursos customizados (por exemplo, `SMTPRelay`) e garante que a infraestrutura
 esteja alinhada com a especificação desejada. O fluxo típico é:
 
-> **Nota sobre ícones** – o Mermaid suporta imagens, pacotes de ícones e elementos HTML na sintaxe de **architecture diagrams**.
-> Consulte a documentação: https://mermaid.js.org/syntax/architecture.html#icons.
->
-> - Para renderizadores que carregam JavaScript (site próprio, páginas estáticas com o bundle), você pode **registrar icon packs**:
->   ```js
->   mermaid.initialize({ startOnLoad: true });
->   mermaid.registerIconPacks([{
->       name: 'k8s',
->       loader: () => fetch('https://unpkg.com/@iconify-json/mdi/icons.json').then(r => r.json())
->   }]);
->   ```
->   Em seguida use `icon` ou `<i>` em nós, por exemplo:
->   ```mermaid
->   flowchart LR
->       pod["pod"]:::k8s
->   ```
->
-> - Para o GitHub e outros visualizadores estáticos, a forma mais confiável é usar **tags `<img>`** ou HTML `<i>` com URLs diretos:
->   ```html
->   <div class="mermaid">
->   flowchart LR
->       Pod[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Pod]
->       Deployment[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Deployment]
->       Service[<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg" width="20"/> Service]
->       Pod --> Deployment --> Service
->   </div>
->   ```
->
-> - Exemplo usando sintaxe de arquitetura com `<i>` (necessita pacote/iconify):
->   ```html
->   <div class="mermaid">
->   flowchart LR
->       pod[<i class="iconify" data-icon="mdi:kubernetes" data-inline="false" style="font-size:1.5rem"></i> Pod]
->       deployment[<i class="iconify" data-icon="mdi:kubernetes-deployment" data-inline="false" style="font-size:1.5rem"></i> Deployment]
->       service[<i class="iconify" data-icon="mdi:kubernetes-service" data-inline="false" style="font-size:1.5rem"></i> Service]
->       pod --> deployment --> service
->   </div>
->   ```
->
-> Ajuste URLs/ícones conforme necessário para refletir pod, deployment, service, etc.
->
-
-
 ```mermaid
-flowchart LR
-    subgraph Cluster
-        CR[☸️ SMTPRelay Custom Resource]
-        Operator[☸️ SMTP Operator]
-        Deployment[☸️ Deployment + Pod smtp-relay]
-        Service[☸️ Service ClusterIP]
-        Secret[☸️ Secret Gmail creds]
-        Client[🧩 Cliente de aplicação]
+flowchart TD
+    subgraph ns1 [namespace: smtp-relay]
+      CR[SMTPRelay Custom Resource]
+      Operator[SMTP Operator]
+      Deployment[Deployment & Pod]
+      Service[Service ClusterIP]
+      Secret[Secret Gmail creds]
+      Postfix[Pod Postfix relay]
+    end
+
+    subgraph ns2 [namespace: application]
+      App[Application Pod]
     end
 
     CR -->|reconcile| Operator
-    Operator -->|cria/atualiza| Deployment
+    Operator -->|creates/updates| Deployment
     Operator --> Service
     Operator --> Secret
-    Client -->|envia e-mail porta 25| Service
+    Deployment --> Postfix
+    App -->|envia e-mail porta 25| Service
+    Postfix -->|SMTP/STARTTLS| Gmail[(Servidor SMTP do Gmail)]
 ```
 
 Esse diagrama mostra o loop de reconciliação e como o operador gera/atualiza os objetos Kubernetes necessários
 (e adaptações similares podem ser aplicadas para outras configurações).
 
+### Diagrama com o funcionamento
 
+![Diagrama drawio](diagram.drawio.svg)
