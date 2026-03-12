@@ -13,11 +13,11 @@ Este projeto fornece uma imagem de contêiner POSIX que roda **Postfix** como um
 ```mermaid
 flowchart LR
     subgraph Cluster Kubernetes
-        Client[Aplicação cliente<br/>(envia e-mail)] -->|porta 25\nsem autenticação| Pod[Pod smtp-relay]
-        Pod -->|entrypoint.sh configura|\ Postfix[Postfix]
+        Client[Aplicação cliente\n(envia e-mail)] -->|porta 25\nsem autenticação| Pod[Pod smtp-relay]
+        Pod -->|entrypoint.sh configura| Postfix[Postfix]
     end
 
-    Postfix -->|SMTP/STARTTLS\nsmtp.gmail.com:587\n(RELAY_USER/RELAY_PASSWORD)| Gmail[(Servidor SMTP<br/>do Gmail)]
+    Postfix -->|SMTP/STARTTLS\nsmtp.gmail.com:587\n(RELAY_USER/RELAY_PASSWORD)| Gmail[(Servidor SMTP\ndo Gmail)]
 
     style Client fill:#f9f,stroke:#333,stroke-width:1px
     style Pod fill:#bbf,stroke:#333,stroke-width:1px
@@ -26,8 +26,7 @@ flowchart LR
 
     %% notas
     note right of Pod
-      - `entrypoint.sh` gera `main.cf` usando\nvariáveis de ambiente:
-      RELAY_USER, RELAY_PASSWORD, MYDOMAIN
+      - `entrypoint.sh` gera `main.cf` usando\nvariáveis de ambiente:\nRELAY_USER, RELAY_PASSWORD, MYDOMAIN
     end
 ```
 
@@ -91,5 +90,31 @@ Os arquivos YAML em `k8s/` descrevem:
 ---
 
 Sinta‑se livre para adaptar conforme as políticas de segurança do seu cluster. Essa imagem **não** faz nenhuma validação do remetente ou do conteúdo; use-a exclusivamente em redes confiáveis ou adicione controles adicionais conforme necessário.
+
+## Funcionamento do Operator
+
+Quando usado como um operador Kubernetes, o controlador observa recursos customizados (por exemplo, `SMTPRelay`) e garante que a infraestrutura
+esteja alinhada com a especificação desejada. O fluxo típico é:
+
+```mermaid
+flowchart LR
+    subgraph Cluster
+        CR[SMTPRelay Custom Resource]
+        Operator[SMTP Operator]
+        Deployment[Deployment \n+ Pod smtp-relay]
+        Service[Service ClusterIP]
+        Secret[Secret Gmail creds]
+        Client[Cliente de aplicação]
+    end
+
+    CR -->|reconcile| Operator
+    Operator -->|cria/atualiza| Deployment
+    Operator --> Service
+    Operator --> Secret
+    Client -->|envia e-mail porta 25| Service
+```
+
+Esse diagrama mostra o loop de reconciliação e como o operador gera/atualiza os objetos Kubernetes necessários
+(e adaptações similares podem ser aplicadas para outras configurações).
 
 
