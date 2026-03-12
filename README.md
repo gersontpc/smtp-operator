@@ -10,27 +10,6 @@ Este projeto fornece uma imagem de contêiner POSIX que roda **Postfix** como um
 2. Um `entrypoint.sh` configura dinamicamente o `main.cf` do Postfix com as credenciais do Gmail.
 3. O Postfix autentica-se no servidor SMTP do Gmail (`smtp.gmail.com:587`) e encaminha as mensagens.
 
-```mermaid
-flowchart LR
-    subgraph Cluster Kubernetes
-        Client[Aplicação cliente (envia e-mail)] -->|porta 25 sem autenticação| Pod[Pod smtp-relay]
-        Pod -->|entrypoint.sh configura| Postfix[Postfix]
-    end
-
-    Postfix -->|SMTP/STARTTLS smtp.gmail.com:587 (RELAY_USER/RELAY_PASSWORD)| Gmail[(Servidor SMTP do Gmail)]
-
-    style Client fill:#f9f,stroke:#333,stroke-width:1px
-    style Pod fill:#bbf,stroke:#333,stroke-width:1px
-    style Postfix fill:#bfb,stroke:#333,stroke-width:1px
-    style Gmail fill:#ffb,stroke:#333,stroke-width:1px
-
-    %% notas
-    note right of Pod
-      - `entrypoint.sh` gera `main.cf` usando variáveis de ambiente: RELAY_USER, RELAY_PASSWORD, MYDOMAIN
-    end
-```
-
-
 ## Variáveis de ambiente obrigatórias
 
 | Variável | Descrição |
@@ -99,12 +78,12 @@ esteja alinhada com a especificação desejada. O fluxo típico é:
 ```mermaid
 flowchart LR
     subgraph Cluster
-        CR[SMTPRelay Custom Resource]
-        Operator[SMTP Operator]
-        Deployment[Deployment + Pod smtp-relay]
-        Service[Service ClusterIP]
-        Secret[Secret Gmail creds]
-        Client[Cliente de aplicação]
+        CR[☸️ SMTPRelay Custom Resource]
+        Operator[☸️ SMTP Operator]
+        Deployment[☸️ Deployment + Pod smtp-relay]
+        Service[☸️ Service ClusterIP]
+        Secret[☸️ Secret Gmail creds]
+        Client[🧩 Cliente de aplicação]
     end
 
     CR -->|reconcile| Operator
