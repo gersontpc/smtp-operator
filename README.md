@@ -13,11 +13,11 @@ Este projeto fornece uma imagem de contêiner POSIX que roda **Postfix** como um
 ```mermaid
 flowchart LR
     subgraph Cluster Kubernetes
-        Client[Aplicação cliente\n(envia e-mail)] -->|porta 25\nsem autenticação| Pod[Pod smtp-relay]
+        Client[Aplicação cliente (envia e-mail)] -->|porta 25 sem autenticação| Pod[Pod smtp-relay]
         Pod -->|entrypoint.sh configura| Postfix[Postfix]
     end
 
-    Postfix -->|SMTP/STARTTLS\nsmtp.gmail.com:587\n(RELAY_USER/RELAY_PASSWORD)| Gmail[(Servidor SMTP\ndo Gmail)]
+    Postfix -->|SMTP/STARTTLS smtp.gmail.com:587 (RELAY_USER/RELAY_PASSWORD)| Gmail[(Servidor SMTP do Gmail)]
 
     style Client fill:#f9f,stroke:#333,stroke-width:1px
     style Pod fill:#bbf,stroke:#333,stroke-width:1px
@@ -26,7 +26,7 @@ flowchart LR
 
     %% notas
     note right of Pod
-      - `entrypoint.sh` gera `main.cf` usando\nvariáveis de ambiente:\nRELAY_USER, RELAY_PASSWORD, MYDOMAIN
+      - `entrypoint.sh` gera `main.cf` usando variáveis de ambiente: RELAY_USER, RELAY_PASSWORD, MYDOMAIN
     end
 ```
 
@@ -101,7 +101,7 @@ flowchart LR
     subgraph Cluster
         CR[SMTPRelay Custom Resource]
         Operator[SMTP Operator]
-        Deployment[Deployment \n+ Pod smtp-relay]
+        Deployment[Deployment + Pod smtp-relay]
         Service[Service ClusterIP]
         Secret[Secret Gmail creds]
         Client[Cliente de aplicação]
