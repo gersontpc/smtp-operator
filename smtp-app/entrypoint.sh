@@ -2,6 +2,16 @@
 # configure postfix main.cf based on environment variables
 set -e
 
+# if DEBUG is set, enable shell tracing and Postfix verbose mode
+if [ -n "$DEBUG" ]; then
+    set -x
+    # increase postfix debug level for SMTP
+    postconf -e "debug_peer_level = 3"
+    postconf -e "debug_peer_list = 127.0.0.1"
+    # will pass -v flag when invoking postfix at the end
+    DEBUG_FLAG="-v"
+fi
+
 # default variables
 : ${RELAY_HOST:=smtp.gmail.com:587}
 : ${RELAY_USER:?"RELAY_USER is required"}
@@ -11,8 +21,15 @@ set -e
 cat <<EOF > /etc/postfix/sasl_passwd
 ${RELAY_HOST} ${RELAY_USER}:${RELAY_PASSWORD}
 EOF
-postmap /etc/postfix/sasl_passwd
-chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+# generate db map, some distributions might not create the .db file if postmap is missing
+if command -v postmap >/dev/null 2>&1; then
+    postmap /etc/postfix/sasl_passwd || true
+fi
+chmod 600 /etc/postfix/sasl_passwd
+# only chmod database if it actually exists
+if [ -f /etc/postfix/sasl_passwd.db ]; then
+    chmod 600 /etc/postfix/sasl_passwd.db
+fi
 
 # configure main.cf minimal
 postconf -e "relayhost = ${RELAY_HOST}"
@@ -31,5 +48,9 @@ postconf -e "mynetworks = 0.0.0.0/0"
 # ensure postfix data directories exist
 postfix check || true
 
-# exec the command
-exec "$@"
+# exec the command (append verbose flag if requested)
+if [ -n "$DEBUG_FLAG" ]; then
+    exec "$@" "$DEBUG_FLAG"
+else
+    exec "$@"
+fi

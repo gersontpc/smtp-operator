@@ -1,11 +1,11 @@
-# Basic POSIX container running postfix as SMTP relay to Gmail
+# Minimal Alpine container running postfix as SMTP relay to Gmail
 
-FROM debian:stable-slim
+FROM alpine:3.18
 
-# install postfix and sasl
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y postfix libsasl2-modules && \
-    rm -rf /var/lib/apt/lists/*
+# install postfix, cyrus-sasl and other dependencies
+RUN apk add --no-cache postfix cyrus-sasl bash \
+    && postconf -e "inet_interfaces = all" \
+    && postconf -e "mydestination = localhost"
 
 # copy entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

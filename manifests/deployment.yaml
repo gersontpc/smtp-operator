@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: smtp-relay
-          image: myregistry/smtp-relay:latest  # ajuste para o seu repositório
+          image: gersontpc/smtp-relay:latest  # ajuste para o seu repositório
           ports:
             - containerPort: 25
           env:
@@ -32,4 +32,11 @@ spec:
                   key: password
             - name: MYDOMAIN
               value: "smtp-relay.default.svc.cluster.local"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
           # recursos e segurança adicionais podem ser definidos aqui

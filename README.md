@@ -21,37 +21,87 @@ Este projeto fornece uma imagem de contêiner POSIX que roda **Postfix** como um
 
 ## Como construir a imagem
 
+O código-fonte da imagem está dentro do subdiretório `smtp-app`.
+
 ```sh
-cd smtp-relay
+cd smtp-app
+# opcional: ajuste nome da imagem e tag
 docker build -t myregistry/smtp-relay:latest .
 ```
 
 Substitua `myregistry` pelo repositório de sua escolha.
 
+> **Observação**: o diretório `smtp-app` contém também o `entrypoint.sh` usado pelo Dockerfile, consulte-o se precisar alterar a configuração do Postfix.
+
+### Exemplo de execução local
+
+Para testar sem Kubernetes, execute um contêiner passando as variáveis de ambiente:
+
+```sh
+docker run --rm -p 25:25 \
+  -e RELAY_USER=you@gmail.com \
+  -e RELAY_PASSWORD="suaSenha" \
+  -e MYDOMAIN="smtp-relay.default.svc.cluster.local" \
+  myregistry/smtp-relay:latest
+```
+
+O `--rm` remove o contêiner ao final e `-p 25:25` expõe a porta SMTP. Ajuste nome/tag conforme o que você construiu.
+
 ## Uso em Kubernetes
+
+Os manifestos Kubernetes estão no diretório `manifests`.
 
 1. **Crie um secret** com as credenciais do Gmail (substitua valores reais):
 
 ```sh
-kubectl apply -f k8s/secret.yaml
+kubectl apply -f manifests/secret.yaml
 ```
 
 2. **Deslize os recursos**:
 
 ```sh
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
+kubectl apply -f manifests/deployment.yaml
+kubectl apply -f manifests/service.yaml
 ```
 
 > Se necessário ajuste o namespace ou o nome do secret.
 
 Os pods clientes podem então enviar e-mail para `smtp-relay.default.svc.cluster.local:25` (ajuste o namespace conforme necessário).
 
-Exemplo de envio de um pod cliente:
+Exemplo de envio de um pod cliente (sem autenticação):
 
 ```sh
-# dentro de outro pod
-echo -e "Subject: teste\n\ncorpo" | sendmail -S smtp-relay.default.svc.cluster.local:25 destinatario@exemplo.com
+# crie um pod transitório com utilitários de rede
+kubectl run -it --rm smtp-test --image=alpine -- ash
+# dentro do pod execute um dos comandos abaixo:
+#
+# usando sendmail (se o pod tiver Postfix ou equivalente):
+# echo -e "Subject: teste\n\ncorpo" | sendmail destinatario@exemplo.com
+#
+# usando msmtp (instale com apk add msmtp no Alpine):
+# echo -e "Subject: teste\n\ncorpo" | msmtp --host=smtp-relay.default.svc.cluster.local --port=25 destinatario@exemplo.com
+#
+# ou com netcat/telnet:
+#   { echo "EHLO localhost"; echo "MAIL FROM:<remetente@example.com>"; echo "RCPT TO:<destinatario@exemplo.com>"; echo "DATA"; echo "Subject: teste"; echo; echo "corpo"; echo "."; echo "QUIT"; } | nc smtp-relay.default.svc.cluster.local 25
+```
+
+Se preferir criar um pod separado e depois usar `kubectl exec`:
+
+```sh
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smtp-client
+spec:
+  containers:
+  - name: client
+    image: alpine
+    command: ["sleep","3600"]
+EOF
+
+# executar comando no pod recém-criado
+echo -e "Subject: teste\n\ncorpo" | kubectl exec -i smtp-client -- sendmail destinatario@exemplo.com
 ```
 
 > **Nota**: O Gmail exige que você use uma senha de aplicativo se 2FA estiver habilitado.
