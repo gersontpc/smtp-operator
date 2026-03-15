@@ -1,10 +1,10 @@
 # SMTP Relay Container (Postfix + Gmail)
 
-TL;DR: Projeto feito para aplicações que precisam enviar e-mails de dentro de um cluster Kubernetes usando um único **SMTP relay** (em vez de cada app ter credencial própria). Ele cria um container que se autentica no servidor SMTP (Gmail) via `STARTTLS` + `SASL`, expõe uma entrada SMTP na porta `25` no cluster que libera somente o namespace permitido através de Network Polocy, e encaminha tudo para o Gmail.
+TL;DR: Projeto para aplicações que precisam enviar e-mails de dentro de um cluster Kubernetes usando um único **SMTP relay** (em vez de cada app ter credenciais próprias). Ele cria um container que se autentica no servidor SMTP (Gmail) via `STARTTLS` + `SASL`, expõe uma entrada SMTP na porta `25` e só permite acesso de namespaces autorizados via NetworkPolicy.
 
 ### Diagrama e funcionamento
 
-Este projeto fornece uma imagem de contêiner baseada em Alpine que roda **Postfix** como relay SMTP. O deployment cria o pod que aceita conexões liberadas através de network policy na porta `25` dentro do cluster e encaminha as mensagens para o Gmail usando `STARTTLS` e autenticação `SASL`.
+Este projeto fornece uma imagem de contêiner baseada em Alpine que roda **Postfix** como relay SMTP. O `Deployment` cria um pod que aceita conexões autorizadas por NetworkPolicy na porta `25` e encaminha as mensagens para o Gmail usando `STARTTLS` e autenticação `SASL`.
 
 ![Diagrama drawio](diagram.drawio.svg)
 
@@ -40,15 +40,18 @@ Por padrão, os logs do Postfix são enviados para o `stdout` do container, ent�
 | `MAILLOG_FILE` | Destino dos logs do Postfix. Padrão: `/dev/stdout` |
 
 
-## Preparando o ambiente:
+## Preparando o ambiente
 
-Antes de aplicar os manifestos do kubernetes para criar o ambiente é necessário alterar os valores da secret [user](manifests/smtp-relay.yaml#L103) e [password](manifests/smtp-relay.yaml#L103). O `user` preencher com a conta de e-mail do gmail e em `password` adicionar a senha que será criada nos passos seguintes:
+Antes de aplicar os manifestos Kubernetes para criar o ambiente, é necessário configurar o `Secret` com sua conta Gmail e a senha de app. Edite os valores em [manifests/smtp-relay.yaml](manifests/smtp-relay.yaml#L103):
+
+- `user`: conta Gmail completa
+- `password`: senha de app (16 caracteres)
 
 **Criando a senha de aplicativo para o GMAIL**
 
-1. Na conta Google `seu-email`@gmail.com, ative Verificação em duas etapas.
-2. Gere uma Senha de app em: https://myaccount.google.com/apppasswords
-3. Substitua o valor de password em [manifests/smtp-relay.yaml](manifests/smtp-relay.yaml#L103) (line 9) pela senha de app de 16 caracteres.
+1. Na conta Google (`seu-email@gmail.com`), ative a **Verificação em duas etapas**.
+2. Gere uma **Senha de app** em: https://myaccount.google.com/apppasswords
+3. Substitua o valor de `password` em [manifests/smtp-relay.yaml](manifests/smtp-relay.yaml#L103) pela senha de app gerada (16 caracteres).
 
 ![](./img/google-password.png)
 
@@ -75,7 +78,7 @@ NAME                         READY   STATUS    RESTARTS   AGE
 smtp-relay-758d9bc679-lsdrh   1/1     Running   0          23s
 ```
 
-3. Execute o comando abaixo para enviar o e-mail de teste através do `POD` de SMTP Relay
+3. Execute o comando abaixo para enviar um e-mail de teste através do `POD` do SMTP Relay
 
 ```shell
 POD=$(kubectl get pod -n smtp-relay -l app=smtp-relay -o jsonpath='{.items[0].metadata.name}')
