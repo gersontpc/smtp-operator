@@ -4,7 +4,7 @@ TL;DR: Projeto para aplicações que precisam enviar e-mails de dentro de um clu
 
 ### Diagrama e funcionamento
 
-Este projeto fornece uma imagem de contêiner baseada em Alpine que roda **Postfix** como relay SMTP. O `Deployment` cria um pod que aceita conexões autorizadas por NetworkPolicy na porta `25` e encaminha os e-mail para o Gmail usando `STARTTLS` e autenticação `SASL`.
+Este projeto fornece uma imagem de contêiner baseada em Alpine que roda **Postfix** como relay SMTP. O `Deployment` cria um pod que aceita conexões autorizadas por NetworkPolicy na porta `25` e redireciona os e-mail para o Gmail usando `STARTTLS` e autenticação `SASL`.
 
 ![Diagrama drawio](diagram.drawio.svg)
 
