@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-ns-custom
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smtp-client
+  namespace: app-ns-custom
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smtp-client
+  template:
+    metadata:
+      labels:
+        app: smtp-client
+    spec:
+      containers:
+      - name: client
+        image: gersontpc/smtp-client:latest
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "16Mi"
+          limits:
+            cpu: "50m"
+            memory: "32Mi"

@@ -2,8 +2,9 @@
 
 FROM alpine:3.18
 
-# install postfix, cyrus-sasl and other dependencies
-RUN apk add --no-cache postfix cyrus-sasl bash \
+# install postfix, sasl support and trust store for TLS relays
+RUN apk add --no-cache postfix cyrus-sasl ca-certificates bash \
+    && update-ca-certificates \
     && postconf -e "inet_interfaces = all" \
     && postconf -e "mydestination = localhost"
 
