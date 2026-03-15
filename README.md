@@ -207,8 +207,7 @@ kubectl exec -it "$POD" -- sh
 4. Execute o comando para enviar o e-mail
 
 ```sh
-printf "Subject: SMTP Client\nDentro de um POD de app client\nPodName: $HOSTNAME\nIP: $(hostname -i)\n" | msmtp --host=smtp-relay.smtp-relay.svc.cluster.local  --port=25 -f gersontpcarneiro@gmail.com gerson.tpc@outl
-ook.com
+printf "Subject: SMTP Client\nDentro de um POD de app client\nPodName: $HOSTNAME\nIP: $(hostname -i)\n" | msmtp --host=smtp-relay.smtp-relay.svc.cluster.local  --port=25 -f gersontpcarneiro@gmail.com gerson.tpc@outlook.com
 
 ```
 
