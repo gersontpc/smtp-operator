@@ -121,7 +121,7 @@ Mar 15 00:18:26 smtp-relay postfix/local[260]: A90452057FD: to=<no-reply@localho
 Mar 15 00:18:26 smtp-relay postfix/qmgr[190]: A90452057FD: removed
 ```
 
-## Realizando o teste de um POD de uma aplicação cliente
+### Realizando o teste de um POD de uma aplicação cliente
 
 Será criado um `POD` de aplicação e um namespace `smtp-client` para poder enviar e validar se a `NetworkPolicy` está funcional:
 
@@ -222,7 +222,7 @@ CLOSED
 
 NetworkPolicy validada com sucesso! 😀
 
-## Troubleshooting
+### Troubleshooting
 
 - `534 5.7.9 Application-specific password required`: a conta Gmail exige `App Password`.
 - `SASL authentication failed`: usuário, `App Password` ou secret incorretos.
@@ -230,16 +230,12 @@ NetworkPolicy validada com sucesso! 😀
 - Mensagens antigas com remetente `root@/etc/mailname`: pod antigo rodando imagem anterior; refaça o rollout.
 - Fila vazia e log com entrega concluída: relay funcional.
 
-## Diagramas
 
-Visão geral do fluxo de e-mail (cliente → relay → Gmail):
+## Conclusão
+Este lab mostrou como é possível centralizar o envio de e-mails em um único relay dentro do cluster, sem expor credenciais de SMTP para cada aplicação.
 
+Principais aprendizados:
 
-## Manifestos disponíveis
-
-- [manifests/deployment.yaml](manifests/deployment.yaml): `Deployment` do relay com probes
-- [manifests/service.yaml](manifests/service.yaml): `Service` `ClusterIP` na porta `25`
-- [manifests/secret.example.yaml](manifests/secret.example.yaml): exemplo de secret sem credenciais reais
-- [manifests/smtprelay-crd.yaml](manifests/smtprelay-crd.yaml): CRD inicial do recurso `SMTPRelay`
-- [manifests/smtprelay-sample.yaml](manifests/smtprelay-sample.yaml): exemplo de custom resource
-
+- A ideia de um relay permite reduzir o número de credenciais em circulação e simplifica auditoria/controle.
+- Em ambientes Kubernetes, é comum isolar a responsabilidade de envio de e-mails em um serviço de infraestrutura (ClusterIP + Deployment).
+- Para testes, vale usar pods clientes leves (Alpine + `msmtp` ou `nc`) em vez de depender do `sendmail` local.
